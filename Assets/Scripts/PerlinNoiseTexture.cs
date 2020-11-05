@@ -5,7 +5,9 @@ using UnityEngine.Tilemaps;
 
 public class PerlinNoiseTexture : MonoBehaviour
 {
-    const float NOISE_SCALE = 2f;
+    [SerializeField] float _noiseScale;
+
+    public Texture2D Texture { get { return texture; } set { value = texture; } }
 
     Texture2D texture;
     Color[] color;
@@ -30,6 +32,7 @@ public class PerlinNoiseTexture : MonoBehaviour
         color = new Color[texture.width * texture.height];
         rendr.material.mainTexture = texture;
 
+        _noiseScale = CheckNoiseScale(_noiseScale);
         CalculateNoise();
     }
 
@@ -38,8 +41,8 @@ public class PerlinNoiseTexture : MonoBehaviour
         for (float y = 0f; y < texture.height; y++) {
             for (float x = 0f; x < texture.width; x++)
             {
-                float xCoord = originPoint.x + x / (texture.width  / NOISE_SCALE) * transform.localScale.x;
-                float yCoord = originPoint.y + y / (texture.height / NOISE_SCALE) * transform.localScale.y;
+                float xCoord = originPoint.x + x / (texture.width  / _noiseScale) * transform.localScale.x;
+                float yCoord = originPoint.y + y / (texture.height / _noiseScale) * transform.localScale.y;
                 float sample = Mathf.PerlinNoise(xCoord, yCoord);
                 color[(int)y * texture.width + (int)x] = new Color(sample, sample, sample);
             }
@@ -47,5 +50,13 @@ public class PerlinNoiseTexture : MonoBehaviour
 
         texture.SetPixels(color);
         texture.Apply();
+    }
+
+    float CheckNoiseScale(float aValue)
+    {
+        if (aValue <= 0) {
+            return 0.1f;
+        }
+        return aValue;
     }
 }
