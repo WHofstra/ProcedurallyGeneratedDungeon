@@ -28,20 +28,14 @@ public class PerlinNoiseTexture : MonoBehaviour
 
     void CalculateNoise()
     {
-        float y = 0f;
-
-        while (y < texture.height)
-        {
-            float x = 0f;
-            while (x < texture.width)
+        for (float y = 0f; y < texture.height; y++) {
+            for (float x = 0f; x < texture.width; x++)
             {
                 float xCoord = originPoint.x + x / texture.width * scale;
                 float yCoord = originPoint.y + y / texture.height * scale;
                 float sample = Mathf.PerlinNoise(xCoord, yCoord);
                 color[(int)y * texture.width + (int)x] = new Color(sample, sample, sample);
-                x++;
             }
-            y++;
         }
 
         texture.SetPixels(color);
