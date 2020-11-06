@@ -26,8 +26,8 @@ public class TilePlacement : MonoBehaviour
 
         if (grid != null) {
             grid = grid.GetComponent<Grid>();
-            transform.position = new Vector3(transform.position.x, transform.position.y - grid.cellSize.y,
-                                             transform.position.z);
+            transform.position = new Vector3(transform.position.x - (grid.cellSize.x / 2f),
+                                             transform.position.y - grid.cellSize.y, transform.position.z);
         }
 
         _tileOccurrence = CheckColorIntensity(_tileOccurrence);

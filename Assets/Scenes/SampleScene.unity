@@ -296,7 +296,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4a27bdeb06e9b949a4091daa1ed94e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _noiseScale: 12
+  _noiseScale: 32
 --- !u!483693784 &1686111389
 TilemapRenderer:
   m_ObjectHideFlags: 0
