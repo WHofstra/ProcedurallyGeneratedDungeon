@@ -10,6 +10,7 @@ public class TilePlacement : MonoBehaviour
 
     [SerializeField] Tile _tile;
     [SerializeField] float _tileOccurrence;
+    [SerializeField] Vector2Int _pixelSize;
 
     Grid grid;
     Tilemap tileMap;
@@ -31,20 +32,21 @@ public class TilePlacement : MonoBehaviour
         }
 
         _tileOccurrence = CheckColorIntensity(_tileOccurrence);
+        _pixelSize      = CheckPixelSize(_pixelSize);
         PlaceGroundTiles(_tile);
     }
 
     void PlaceGroundTiles(Tile aTile)
     {
         float intensityBar = (COLOR_INTENSITY_MAX - _tileOccurrence)/ COLOR_INTENSITY_MAX;
-        gridSize = new Vector2Int(Mathf.CeilToInt(texture.Texture.width  / (GRID_GEN_OFFSET * grid.cellSize.x)),
-                                  Mathf.CeilToInt(texture.Texture.height / (GRID_GEN_OFFSET * grid.cellSize.y)));
+        gridSize = new Vector2Int(Mathf.FloorToInt(texture.Texture.width  / (GRID_GEN_OFFSET * grid.cellSize.x)),
+                                  Mathf.FloorToInt(texture.Texture.height / (GRID_GEN_OFFSET * grid.cellSize.y)));
 
         for (int j = 0; j < gridSize.y; j++) {
             for (int i = 0; i < gridSize.x; i++)
             {
-                if (texture.Texture.GetPixel(Mathf.FloorToInt(i / grid.cellSize.x),
-                    Mathf.FloorToInt(j / grid.cellSize.y)).r > intensityBar)
+                if (texture.Texture.GetPixel(Mathf.FloorToInt((i / grid.cellSize.x) / _pixelSize.x),
+                    Mathf.FloorToInt((j / grid.cellSize.y) / _pixelSize.y)).r > intensityBar)
                 {
                     tilePos = new Vector3Int(i - Mathf.RoundToInt(gridSize.x / 2f), -(j - Mathf.RoundToInt(gridSize.y / 2f)), 0);
                     tileMap.SetTile(tilePos, aTile);
@@ -59,8 +61,21 @@ public class TilePlacement : MonoBehaviour
             return COLOR_INTENSITY_MAX;
         }
         else if (aColor < 0f) {
-            return 0;
+            return 0f;
         }
         return aColor;
+    }
+
+    Vector2Int CheckPixelSize(Vector2Int aSize)
+    {
+        if (aSize.x <= 0) {
+            aSize.x = 1;
+        }
+
+        if (aSize.y <= 0) {
+            aSize.y = 1;
+        }
+
+        return aSize;
     }
 }
