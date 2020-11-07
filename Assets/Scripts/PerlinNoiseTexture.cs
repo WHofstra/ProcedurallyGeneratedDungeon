@@ -44,6 +44,7 @@ public class PerlinNoiseTexture : MonoBehaviour
                 float xCoord = originPoint.x + x / (texture.width  / _noiseScale) * transform.localScale.x;
                 float yCoord = originPoint.y + y / (texture.height / _noiseScale) * transform.localScale.y;
 
+                //This Adds Randomization
                 int[] newNoise = { Random.Range(0, 1000), Random.Range(0, 1000) };
 
                 float sample = Mathf.PerlinNoise(xCoord + (newNoise[0] / 10f), yCoord + (newNoise[1] / 10f));
@@ -57,6 +58,7 @@ public class PerlinNoiseTexture : MonoBehaviour
 
     float CheckNoiseScale(float aValue)
     {
+        //Prevent a 0-value
         if (aValue <= 0) {
             return 0.1f;
         }

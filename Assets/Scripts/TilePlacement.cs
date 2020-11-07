@@ -8,7 +8,7 @@ public class TilePlacement : MonoBehaviour
     const float GRID_GEN_OFFSET     = 45f;
     const float COLOR_INTENSITY_MAX = 100f;
 
-    [SerializeField] Tile _tile;
+    [SerializeField] Tile[] _tile;
     [SerializeField] float _tileOccurrence;
     [SerializeField] Vector2Int _pixelSize;
 
@@ -33,18 +33,21 @@ public class TilePlacement : MonoBehaviour
 
         _tileOccurrence = CheckColorIntensity(_tileOccurrence);
         _pixelSize      = CheckPixelSize(_pixelSize);
-        PlaceGroundTiles(_tile);
+        PlaceGroundTiles(_tile[0], _tile[1]);
     }
 
-    void PlaceGroundTiles(Tile aTile)
+    void PlaceGroundTiles(Tile aTile, Tile otherTile)
     {
-        float intensityBar = (COLOR_INTENSITY_MAX - _tileOccurrence)/ COLOR_INTENSITY_MAX;
+        float intensityBar         = (COLOR_INTENSITY_MAX - _tileOccurrence)/ COLOR_INTENSITY_MAX;
+
         gridSize = new Vector2Int(Mathf.FloorToInt(texture.Texture.width  / (GRID_GEN_OFFSET * grid.cellSize.x)),
                                   Mathf.FloorToInt(texture.Texture.height / (GRID_GEN_OFFSET * grid.cellSize.y)));
 
+        //Tile Placement Based on Texture Pixel Intensity Values
         for (int j = 0; j < gridSize.y; j++) {
             for (int i = 0; i < gridSize.x; i++)
             {
+                //Look for the 'r'-value per Pixel
                 if (texture.Texture.GetPixel(Mathf.FloorToInt((i / grid.cellSize.x) / _pixelSize.x),
                     Mathf.FloorToInt((j / grid.cellSize.y) / _pixelSize.y)).r > intensityBar)
                 {
@@ -57,6 +60,7 @@ public class TilePlacement : MonoBehaviour
 
     float CheckColorIntensity(float aColor)
     {
+        //Check for a Value Between 0 and 100
         if (aColor > COLOR_INTENSITY_MAX) {
             return COLOR_INTENSITY_MAX;
         }
@@ -68,6 +72,7 @@ public class TilePlacement : MonoBehaviour
 
     Vector2Int CheckPixelSize(Vector2Int aSize)
     {
+        //Prevent a 0-value
         if (aSize.x <= 0) {
             aSize.x = 1;
         }

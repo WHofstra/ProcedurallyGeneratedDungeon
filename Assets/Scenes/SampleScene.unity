@@ -419,6 +419,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13476844929f8244699546e47ce1519a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tile: {fileID: 11400000, guid: 02d18b1ce22c96945962588432f206e8, type: 2}
+  _tile:
+  - {fileID: 11400000, guid: 02d18b1ce22c96945962588432f206e8, type: 2}
+  - {fileID: 11400000, guid: 4934cf0a432df474e9cadbd8e90d565b, type: 2}
   _tileOccurrence: 30
   _pixelSize: {x: 32, y: 32}
