@@ -12,22 +12,13 @@ public class PerlinNoiseTexture : MonoBehaviour
     Texture2D texture;
     Color[] color;
     Renderer rendr;
-    Camera cam;
 
     Vector2 originPoint = new Vector2(0, 0);
 
     void Awake()
     {
         rendr = GetComponent<Renderer>();
-        cam   = FindObjectOfType<Camera>();
-
-        if (cam != null) {
-            cam = cam.GetComponent<Camera>();
-            texture = new Texture2D(cam.pixelWidth, cam.pixelHeight);
-        }
-        else {
-            texture = new Texture2D(668, 376);
-        }
+        texture = new Texture2D(888, 500);
 
         color = new Color[texture.width * texture.height];
         rendr.material.mainTexture = texture;

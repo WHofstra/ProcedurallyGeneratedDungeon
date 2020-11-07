@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 
 public class TilePlacement : MonoBehaviour
 {
-    const float GRID_GEN_OFFSET     = 45f;
+    const float GRID_GEN_OFFSET     = 50f;
     const float COLOR_INTENSITY_MAX = 100f;
 
     [SerializeField] Tile[] _tile;
@@ -16,6 +16,7 @@ public class TilePlacement : MonoBehaviour
     Tilemap tileMap;
     PerlinNoiseTexture texture;
 
+    List<Vector2Int> centerPoint = new List<Vector2Int>();
     Vector3Int tilePos;
     Vector2Int gridSize;
 
@@ -38,10 +39,11 @@ public class TilePlacement : MonoBehaviour
 
     void PlaceGroundTiles(Tile aTile, Tile otherTile)
     {
-        float intensityBar         = (COLOR_INTENSITY_MAX - _tileOccurrence)/ COLOR_INTENSITY_MAX;
+        float intensityBar        = (COLOR_INTENSITY_MAX - _tileOccurrence)/ COLOR_INTENSITY_MAX;
+        Vector3Int[] tileNeighbor = new Vector3Int[2];
 
-        gridSize = new Vector2Int(Mathf.FloorToInt(texture.Texture.width  / (GRID_GEN_OFFSET * grid.cellSize.x)),
-                                  Mathf.FloorToInt(texture.Texture.height / (GRID_GEN_OFFSET * grid.cellSize.y)));
+        gridSize = new Vector2Int(Mathf.CeilToInt(texture.Texture.width  / (GRID_GEN_OFFSET * grid.cellSize.x)),
+                                  Mathf.CeilToInt(texture.Texture.height / (GRID_GEN_OFFSET * grid.cellSize.y)));
 
         //Tile Placement Based on Texture Pixel Intensity Values
         for (int j = 0; j < gridSize.y; j++) {
@@ -51,10 +53,33 @@ public class TilePlacement : MonoBehaviour
                 if (texture.Texture.GetPixel(Mathf.FloorToInt((i / grid.cellSize.x) / _pixelSize.x),
                     Mathf.FloorToInt((j / grid.cellSize.y) / _pixelSize.y)).r > intensityBar)
                 {
+                    tileNeighbor[0] = new Vector3Int(i - Mathf.RoundToInt(gridSize.x / 2f) - 1,
+                                                   -(j - Mathf.RoundToInt(gridSize.y / 2f)), 0);
+                    tileNeighbor[1] = new Vector3Int(i - Mathf.RoundToInt(gridSize.x / 2f),
+                                                   -(j - Mathf.RoundToInt(gridSize.y / 2f) - 1), 0);
+
                     tilePos = new Vector3Int(i - Mathf.RoundToInt(gridSize.x / 2f), -(j - Mathf.RoundToInt(gridSize.y / 2f)), 0);
-                    tileMap.SetTile(tilePos, aTile);
+
+                    if (tileMap.GetTile(tileNeighbor[0]) == null && tileMap.GetTile(tileNeighbor[1]) == null)
+                    {
+                        tilePos = new Vector3Int(i - Mathf.RoundToInt(gridSize.x / 2f) + Mathf.FloorToInt(grid.cellSize.x * _pixelSize.x * 0.5f),
+                                               -(j - Mathf.RoundToInt(gridSize.y / 2f) + Mathf.FloorToInt(grid.cellSize.y * _pixelSize.y * 0.5f)), 0);
+                        tileMap.SetTile(tilePos, otherTile);
+                        centerPoint.Add(new Vector2Int(tilePos.x, tilePos.y));
+                    }
+
+                    tilePos = new Vector3Int(i - Mathf.RoundToInt(gridSize.x / 2f),
+                                           -(j - Mathf.RoundToInt(gridSize.y / 2f)), 0);
+
+                    if (tileMap.GetTile(tilePos) == null) {
+                        tileMap.SetTile(tilePos, aTile);
+                    }
                 }
             }
+        }
+
+        if (centerPoint.Count > 0) {
+            //Pathfinding
         }
     }
 
