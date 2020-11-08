@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -7,6 +8,7 @@ public class TilePlacement : MonoBehaviour
 {
     const float GRID_GEN_OFFSET     = 50f;
     const float COLOR_INTENSITY_MAX = 100f;
+    const int BRIDGE_LENGTH_MAX     = 300;
 
     [SerializeField] Tile[] _tile;
     [SerializeField] float _tileOccurrence;
@@ -17,6 +19,7 @@ public class TilePlacement : MonoBehaviour
     PerlinNoiseTexture texture;
 
     List<Vector2Int> centerPoint = new List<Vector2Int>();
+    Vector3Int[] tileNeighbor    = new Vector3Int[2];
     Vector3Int tilePos;
     Vector2Int gridSize;
 
@@ -39,11 +42,9 @@ public class TilePlacement : MonoBehaviour
 
     void PlaceGroundTiles(Tile aTile, Tile otherTile)
     {
-        float intensityBar        = (COLOR_INTENSITY_MAX - _tileOccurrence)/ COLOR_INTENSITY_MAX;
-        Vector3Int[] tileNeighbor = new Vector3Int[2];
-
-        gridSize = new Vector2Int(Mathf.CeilToInt(texture.Texture.width  / (GRID_GEN_OFFSET * grid.cellSize.x)),
-                                  Mathf.CeilToInt(texture.Texture.height / (GRID_GEN_OFFSET * grid.cellSize.y)));
+        float intensityBar = (COLOR_INTENSITY_MAX - _tileOccurrence)/ COLOR_INTENSITY_MAX;
+        gridSize           = new Vector2Int(Mathf.CeilToInt(texture.Texture.width  / (GRID_GEN_OFFSET * grid.cellSize.x)),
+                                            Mathf.CeilToInt(texture.Texture.height / (GRID_GEN_OFFSET * grid.cellSize.y)));
 
         //Tile Placement Based on Texture Pixel Intensity Values
         for (int j = 0; j < gridSize.y; j++) {
@@ -60,6 +61,7 @@ public class TilePlacement : MonoBehaviour
 
                     tilePos = new Vector3Int(i - Mathf.RoundToInt(gridSize.x / 2f), -(j - Mathf.RoundToInt(gridSize.y / 2f)), 0);
 
+                    //Find the Center of a Room
                     if (tileMap.GetTile(tileNeighbor[0]) == null && tileMap.GetTile(tileNeighbor[1]) == null)
                     {
                         tilePos = new Vector3Int(i - Mathf.RoundToInt(gridSize.x / 2f) + Mathf.FloorToInt(grid.cellSize.x * _pixelSize.x * 0.5f),
@@ -71,6 +73,7 @@ public class TilePlacement : MonoBehaviour
                     tilePos = new Vector3Int(i - Mathf.RoundToInt(gridSize.x / 2f),
                                            -(j - Mathf.RoundToInt(gridSize.y / 2f)), 0);
 
+                    //Place Tile if There is None Placed Yet
                     if (tileMap.GetTile(tilePos) == null) {
                         tileMap.SetTile(tilePos, aTile);
                     }
@@ -78,8 +81,65 @@ public class TilePlacement : MonoBehaviour
             }
         }
 
+        //Draw Connecting Bridges
         if (centerPoint.Count > 0) {
-            //Pathfinding
+            for (int i = 0; i < (centerPoint.Count - 1); i++) {
+                PlaceHorizontalBridges(centerPoint[i], centerPoint[i + 1], aTile);
+            }
+
+            centerPoint = SortOnXValues(centerPoint);
+
+            /* //To Check Sort in Debug
+            foreach (Vector2Int point in centerPoint) {
+                Debug.Log(point);
+            }//*/
+
+            //*
+            for (int i = (centerPoint.Count - 1); i > 0; i--) {
+                PlaceVerticalBridges(centerPoint[i], centerPoint[i - 1], aTile);
+            }//*/
+        }
+    }
+
+    void PlaceHorizontalBridges(Vector2Int posA, Vector2Int posB, Tile aTile)
+    {
+        //Check for the Exact Same 'y'-value
+        if (posA.y == posB.y)
+        {
+            int killSwitch = 0;
+            tileNeighbor[0] = new Vector3Int(posA.x + 1, posA.y, 0);
+            tileNeighbor[1] = new Vector3Int(posB.x, posB.y, 0);
+
+            //Walk Till You Get There
+            while (tileNeighbor[0] != tileNeighbor[1] && killSwitch < BRIDGE_LENGTH_MAX)
+            {
+                if (tileMap.GetTile(tileNeighbor[0]) == null) {
+                    tileMap.SetTile(tileNeighbor[0], aTile);
+                }
+                tileNeighbor[0].x++;
+                killSwitch++;
+            }
+        }
+    }
+
+    void PlaceVerticalBridges(Vector2Int posA, Vector2Int posB, Tile aTile)
+    {
+        //Check for the Exact Same 'x'-value
+        if (posA.x == posB.x)
+        {
+            int killSwitch  = 0;
+            tileNeighbor[0] = new Vector3Int(posA.x, posA.y - 1, 0);
+            tileNeighbor[1] = new Vector3Int(posB.x, posB.y, 0);
+
+            //Walk Till You Get There
+            while (tileNeighbor[0] != tileNeighbor[1] && killSwitch < BRIDGE_LENGTH_MAX)
+            {
+                if (tileMap.GetTile(tileNeighbor[0]) == null) {
+                    tileMap.SetTile(tileNeighbor[0], aTile);
+                }
+                tileNeighbor[0].y--;
+                killSwitch++;
+            }
         }
     }
 
@@ -107,5 +167,32 @@ public class TilePlacement : MonoBehaviour
         }
 
         return aSize;
+    }
+
+    List<Vector2Int> SortOnXValues(List<Vector2Int> currentList)
+    {
+        Vector2Int[] sorter = currentList.ToArray();
+
+        //Selection Sorting
+        for (int i = 0; i < sorter.Length; i++)
+        {
+            int minimumIndex = i;
+            for (var j = i + 1; j < sorter.Length; j++)
+            {
+                if (sorter[minimumIndex].x > sorter[j].x ||
+                   (sorter[minimumIndex].x == sorter[j].x && sorter[minimumIndex].y > sorter[j].y)) {
+                    minimumIndex = j;
+                }
+            }
+
+            if (minimumIndex != i)
+            {
+                Vector2Int temp      = sorter[minimumIndex];
+                sorter[minimumIndex] = sorter[i];
+                sorter[i]            = temp;
+            }
+        }
+
+        return sorter.ToList<Vector2Int>();
     }
 }
