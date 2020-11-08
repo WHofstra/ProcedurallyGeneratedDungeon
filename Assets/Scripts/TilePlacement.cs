@@ -71,7 +71,7 @@ public class TilePlacement : MonoBehaviour
                                                -(j - Mathf.RoundToInt(gridSize.y / 2f) + Mathf.FloorToInt(grid.cellSize.y * _pixelSize.y * 0.5f)), 0);
 
                         //Highlight Center of Room
-                        tileMap.SetTile(tilePos, otherTile);
+                        //tileMap.SetTile(tilePos, otherTile);
                         centerPoint[0].Add(new Vector2Int(tilePos.x, tilePos.y));
                     }
 
@@ -121,10 +121,12 @@ public class TilePlacement : MonoBehaviour
             tileNeighbor[0] = new Vector3Int(point.x + Mathf.FloorToInt(grid.cellSize.x * _pixelSize.x), point.y, 0);
             tileNeighbor[1] = new Vector3Int(point.x, point.y - Mathf.FloorToInt(grid.cellSize.y * _pixelSize.y), 0);
 
-            for (int i = 0; i < 2; i++) {
-                if (tileMap.GetTile(tileNeighbor[i]) != null && tileMap.GetTile(tileNeighbor[i]) != aTile)
+            for (int i = 0; i < 2; i++)
+            {
+                if (tileMap.GetTile(tileNeighbor[i]) != null &&
+                    !centers.Contains(new Vector2Int(tileNeighbor[i].x, tileNeighbor[i].y)))
                 {
-                    tileMap.SetTile(tileNeighbor[i], aTile);
+                    //tileMap.SetTile(tileNeighbor[i], aTile);
                     newList.Add(new Vector2Int(tileNeighbor[i].x, tileNeighbor[i].y));
                 }
             }
